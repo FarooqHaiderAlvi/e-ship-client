@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import axiosInstance from "../api/axios";
+import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const CheckoutForm = ({ cartId }: { cartId: string }) => {

@@ -1,17 +1,10 @@
-import React, {
-  useState,
-  useEffect,
-  type ChangeEvent,
-  type FormEvent,
-} from "react";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import spinner from "../../assets/Spinner2.gif"; // Ensure you have a spinner image in the specified path
-import { type AppDispatch, type RootState } from "../../store/store"; // Adjust path if needed
-import {
-  loginUser,
-  fetchLoggedInUser,
-} from "../../store/features/auth/authThunk";
+import { useDispatch } from "react-redux";
+import spinner from "../../../assets/icons/spinner.gif";
+import { type AppDispatch } from "../../../store/store";
+import { loginUser } from "../../../store/features/auth/authThunk";
+
 
 export default function Login() {
   // 🔹 Local state
@@ -22,21 +15,6 @@ export default function Login() {
   // 🔹 Redux hooks
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { user, isLoadingUser } = useSelector((state: RootState) => state.auth);
-
-  // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
-  }, [user, navigate]);
-
-  // Fetch logged-in user on mount
-  useEffect(() => {
-    if (user === null) {
-      dispatch(fetchLoggedInUser());
-    }
-  }, [dispatch, user]);
 
   // 🔹 Input handler
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -64,15 +42,6 @@ export default function Login() {
       setLoading(false);
     }
   };
-
-  // 🔹 Show loading spinner
-  if (isLoadingUser) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <img src={spinner} alt="Loading..." className="h-[100px] w-[100px]" />
-      </div>
-    );
-  }
 
   // 🔹 Render login form
   return (
@@ -139,32 +108,6 @@ export default function Login() {
         <Link to="/signup" className="text-blue-400 font-semibold">
           Sign up
         </Link>
-      </div>
-
-      {/* App Download Badges */}
-      <div className="max-w-sm w-full flex justify-center gap-2 mt-6">
-        <a
-          href="https://play.google.com/store/apps/details?id=com.instagram.android"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="https://static.cdninstagram.com/rsrc.php/v4/yz/r/c5Rp7Ym-Klz.png"
-            alt="Get it on Google Play"
-            className="h-10"
-          />
-        </a>
-        <a
-          href="ms-windows-store://pdp/?productid=9nblggh5l9xt"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <img
-            src="https://static.cdninstagram.com/rsrc.php/v4/yu/r/EHY6QnZYdNX.png"
-            alt="Get it from Microsoft"
-            className="h-10"
-          />
-        </a>
       </div>
     </div>
   );

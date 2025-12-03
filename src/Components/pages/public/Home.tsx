@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../api/axios";
+import axiosInstance from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
-
 interface Product {
   _id: string;
   name: string;

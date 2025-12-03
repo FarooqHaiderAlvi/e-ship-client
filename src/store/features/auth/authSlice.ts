@@ -50,7 +50,7 @@ const authSlice = createSlice({
 
       // 🔹 Signup User
       .addCase(signupUser.pending, (state) => {
-        state.isLoadingUser = true;
+        // state.isLoadingUser = true;
         state.error = null;
       })
       .addCase(signupUser.fulfilled, (state, action: PayloadAction<any>) => {
