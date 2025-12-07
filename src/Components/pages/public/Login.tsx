@@ -1,45 +1,68 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import spinner from "../../../assets/icons/spinner.gif";
 import { type AppDispatch } from "../../../store/store";
 import { loginUser } from "../../../store/features/auth/authThunk";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { showSuccessToast, showErrorToast } from "../../../utils/toast";
+import { useForm } from "react-hook-form";
 
+const loginSchema = z.object({
+  name: z.string().min(2, "Username or Email is required"),
+  password: z.string(),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function Login() {
   // 🔹 Local state
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setError: setFormError,
+    reset,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
 
   // 🔹 Redux hooks
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  // 🔹 Input handler
-  const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    if (id === "email") setEmail(value);
-    if (id === "password") setPassword(value);
-  };
-
   // 🔹 Login handler
-  const handleLogIn = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
+  const handleLogIn = async (data: LoginFormData) => {
     try {
-      const resultAction = await dispatch(loginUser({ email, password }));
+      const resultAction = await dispatch(loginUser(data));
 
       if (loginUser.fulfilled.match(resultAction)) {
+        showSuccessToast("Login successful! Welcome back!");
         console.log("Login successful:", resultAction.payload);
         navigate("/");
       } else {
-        console.error("Login failed:", resultAction.payload);
+        // ❌ Error toast (red) - Backend error
+        console.log("log541", resultAction.payload);
+        reset();
+        const errorMessage =
+          (resultAction.payload as string) || "Login failed. Please try again.";
+        showErrrToast(errorMessage);
+        // Also set form error for display
+        setFormError("root", {
+          type: "manual",
+          message: errorMessage,
+        });
       }
     } catch (err) {
+      // ❌ Error toast (red) - Unexpected error
+      reset();
+      console.log("log5412");
+      showErrorToast("An unexpected error occurred. Please try again.");
+      setFormError("root", {
+        type: "manual",
+        message: "An unexpected error occurred. Please try again.",
+      });
       console.error("Unexpected error:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -64,30 +87,48 @@ export default function Login() {
         ></div>
 
         {/* Login Form */}
-        <form className="space-y-3" onSubmit={handleLogIn}>
-          <input
-            type="text"
-            id="email"
-            onChange={handleOnChange}
-            value={email}
-            placeholder="Username or Email"
-            className="w-full px-2 py-1.5 border border-gray-600 bg-black text-white text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-          />
-          <input
-            type="password"
-            id="password"
-            onChange={handleOnChange}
-            value={password}
-            placeholder="Password"
-            className="w-full px-2 py-1.5 border border-gray-600 bg-black text-white text-sm rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-          />
+        <form className="space-y-3" onSubmit={handleSubmit(handleLogIn)}>
+          <div>
+            <input
+              type="text"
+              id="name"
+              {...register("name")}
+              placeholder="Username or Email"
+              className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm focus:outline-none focus:ring-1 ${
+                errors.name
+                  ? "border-red-500 focus:ring-red-400"
+                  : "border-gray-600 focus:ring-blue-400"
+              }`}
+            />
+            {errors.name && (
+              <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>
+            )}
+          </div>
+          <div>
+            <input
+              type="password"
+              id="password"
+              {...register("password")}
+              placeholder="Password"
+              className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm focus:outline-none focus:ring-1 ${
+                errors.password
+                  ? "border-red-500 focus:ring-red-400"
+                  : "border-gray-600 focus:ring-blue-400"
+              }`}
+            />
+            {errors.password && (
+              <p className="text-red-400 text-xs mt-1">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-1.5 text-sm rounded-md hover:bg-blue-600 transition flex justify-center items-center h-[36px]"
-            disabled={loading}
+            className="w-full bg-blue-500 text-white py-1.5 text-sm rounded-md hover:bg-blue-600 transition flex justify-center items-center h-[36px] disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isSubmitting}
           >
-            {loading ? (
-              <img src={spinner} alt="Loading..." className="h-6 w-6" />
+            {isSubmitting ? (
+              <img src={spinner} alt="Loading2..." className="h-6 w-6" />
             ) : (
               "Log In"
             )}

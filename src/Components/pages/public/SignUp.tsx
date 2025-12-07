@@ -41,7 +41,7 @@ export default function SignUp() {
   const navigate = useNavigate();
 
   // 🔹 Signup handler
-  const onSubmit = async (data: SignupFormData) => {
+  const handleSignUp = async (data: SignupFormData) => {
     try {
       const resultAction = await dispatch(signupUser(data));
 
@@ -98,7 +98,7 @@ export default function SignUp() {
         ></div>
 
         {/* Signup Form */}
-        <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+        <form className="space-y-3" onSubmit={handleSubmit(handleSignUp)}>
           {/* Name Field */}
           <div>
             <input

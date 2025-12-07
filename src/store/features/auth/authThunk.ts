@@ -4,7 +4,7 @@ import { AxiosError } from "axios";
 
 // Define expected form data types
 interface LoginFormData {
-  email: string;
+  name: string;
   password: string;
 }
 
