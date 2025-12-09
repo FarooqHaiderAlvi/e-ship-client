@@ -18,6 +18,13 @@ interface ForgotPassData {
   email: string;
 }
 
+
+interface ResetPassData {
+  password: string;
+  confirmPassword:string;
+  token:string
+}
+
 // Define expected API response types (you can adjust based on backend)
 interface AuthResponse {
   message: string;
@@ -93,6 +100,21 @@ export const forgotPassword = createAsyncThunk<AuthResponse,ForgotPassData>("use
   try{
     const { data } = await axiosInstance.post<AuthResponse>(
       "/users/forgot-password",
+      formData
+    );
+    console.log(data);
+    return data;
+  }catch{
+    return thunkAPI.rejectWithValue("500 internal server error.")
+  }
+})
+
+
+export const resetPassword = createAsyncThunk<AuthResponse,ResetPassData>("user/resetPassword",
+  async (formData,thunkAPI)=>{
+  try{
+    const { data } = await axiosInstance.post<AuthResponse>(
+      "/users/reset-password",
       formData
     );
     console.log(data);
