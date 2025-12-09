@@ -1,5 +1,5 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { loginUser, signupUser, fetchLoggedInUser } from "./authThunk";
+import { createSlice, isAction, type PayloadAction } from "@reduxjs/toolkit";
+import { loginUser, signupUser, fetchLoggedInUser,forgotPassword } from "./authThunk";
 
 // Define user shape
 interface User {
@@ -77,7 +77,14 @@ const authSlice = createSlice({
       .addCase(fetchLoggedInUser.rejected, (state) => {
         state.isLoadingUser = false;
         state.user = null; // Clear user on failure
-      });
+      })
+
+      .addCase(
+        forgotPassword.fulfilled,
+        (state,action: PayloadAction<User>) =>{
+          console.log("email sent OK...")
+        }
+      )
   },
 });
 

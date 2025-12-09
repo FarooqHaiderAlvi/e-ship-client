@@ -9,7 +9,7 @@ import Home from "./Components/pages/public/Home";
 import PaymentSuccess from "./Components/pages/public/PaymentSuccess";
 import Checkout from "./Components/pages/public/Checkout";
 import PublicRoute from "./routes/PublicRoute";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import ForgotPassword from "./Components/pages/public/ForgotPassword";
 
 const App: React.FC = () => {
   return (
@@ -90,6 +90,16 @@ const App: React.FC = () => {
             <PublicRoute>
               <Layout>
                 <SignUp />
+              </Layout>
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/forgot-password"
+          element={
+            <PublicRoute>
+              <Layout>
+                <ForgotPassword />
               </Layout>
             </PublicRoute>
           }

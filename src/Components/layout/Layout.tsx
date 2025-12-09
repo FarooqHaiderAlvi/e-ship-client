@@ -17,7 +17,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   console.log(location, "log18");
   // Hide Navbar on auth pages
   const hideNavbar =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/forgot-password";
 
   return (
     <div className="min-h-screen">

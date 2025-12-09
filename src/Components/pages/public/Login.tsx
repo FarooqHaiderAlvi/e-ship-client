@@ -46,7 +46,7 @@ export default function Login() {
         reset();
         const errorMessage =
           (resultAction.payload as string) || "Login failed. Please try again.";
-        showErrrToast(errorMessage);
+        showErrorToast(errorMessage);
         // Also set form error for display
         setFormError("root", {
           type: "manual",
@@ -137,9 +137,9 @@ export default function Login() {
 
         {/* Forgot Password */}
         <div className="text-center">
-          <a href="#" className="text-xs text-blue-400">
+          <Link to="/forgot-password" className="text-xs text-blue-400">
             Forgot password?
-          </a>
+          </Link>
         </div>
       </div>
 

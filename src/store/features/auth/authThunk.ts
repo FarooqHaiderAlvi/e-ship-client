@@ -14,6 +14,10 @@ interface SignupFormData {
   password: string;
 }
 
+interface ForgotPassData {
+  email: string;
+}
+
 // Define expected API response types (you can adjust based on backend)
 interface AuthResponse {
   message: string;
@@ -71,10 +75,10 @@ export const signupUser = createAsyncThunk<AuthResponse, SignupFormData>(
 // 🔹 Fetch Logged In User
 export const fetchLoggedInUser = createAsyncThunk(
   "auth/fetchLoggedInUser",
-  async (_, thunkAPI) => {
+  async (formData, thunkAPI) => {
     try {
       const { data } = await axiosInstance.get<{ data: AuthResponse["user"] }>(
-        "/users/get-user"
+        "/users/get-user",
       );
       return data.data;
     } catch {
@@ -82,3 +86,18 @@ export const fetchLoggedInUser = createAsyncThunk(
     }
   }
 );
+
+
+export const forgotPassword = createAsyncThunk<AuthResponse,ForgotPassData>("user/forgotPassword",
+  async (formData,thunkAPI)=>{
+  try{
+    const { data } = await axiosInstance.post<AuthResponse>(
+      "/users/forgot-password",
+      formData
+    );
+    console.log(data);
+    return data;
+  }catch{
+    return thunkAPI.rejectWithValue("500 internal server error.")
+  }
+})
