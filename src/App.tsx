@@ -11,6 +11,7 @@ import Checkout from "./Components/pages/public/Checkout";
 import PublicRoute from "./routes/PublicRoute";
 import ForgotPassword from "./Components/pages/public/ForgotPassword";
 import ResetPassword from "./Components/pages/public/ResetPassword";
+import PageNotFound from "./Components/pages/public/PageNotFound";
 
 const App: React.FC = () => {
   return (
@@ -107,6 +108,7 @@ const App: React.FC = () => {
         />
 
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="*" element={<PageNotFound />} />
 
         {/* ============================================
             PRIVATE ROUTES (Auth Required)
