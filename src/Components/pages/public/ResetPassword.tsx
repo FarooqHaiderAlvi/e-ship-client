@@ -3,10 +3,12 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import spinner from "../../../assets/icons/spinner.gif";
 import { showSuccessToast, showErrorToast } from "../../../utils/toast";
 import { type AppDispatch } from "../../../store/store";
 import { resetPassword } from "../../../store/features/auth/authThunk";
+import { jwtDecode } from "jwt-decode";
 
 // 🔹 Zod Schema
 const resetSchema = z
@@ -21,14 +23,45 @@ const resetSchema = z
 
 type ResetFormData = z.infer<typeof resetSchema>;
 
+// 🔹 Utility function to decode JWT and check expiration
+export const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded = jwtDecode(token);
+
+    if (!decoded.exp) return true;
+
+    return Date.now() >= decoded.exp * 1000;
+  } catch (error) {
+    console.error(error, "err");
+    return true;
+  }
+};
+
 const ResetPassword = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const [isTokenExpiredState, setIsTokenExpiredState] = useState(false);
 
-  // 🔹 We expect a reset token in URL:  /reset-password?token=xxx
+  // 🔹 We expect a reset token in URL:  /reset-password/:token
   const params = useParams();
   const token = params?.token;
-  console.log(token, "tokrn");
+
+  // 🔹 Check token expiration on component mount
+  useEffect(() => {
+    if (!token) {
+      showErrorToast("Invalid or missing reset token.");
+      setIsTokenExpiredState(true);
+      return;
+    }
+
+    if (isTokenExpired(token)) {
+      showErrorToast(
+        "This reset link has expired. Please request a new password reset link."
+      );
+      setIsTokenExpiredState(true);
+    }
+  }, [token]);
+
   const {
     register,
     handleSubmit,
@@ -42,6 +75,19 @@ const ResetPassword = () => {
   const onSubmit = async (data: ResetFormData) => {
     if (!token) {
       showErrorToast("Invalid or missing reset token.");
+      return;
+    }
+
+    // 🔹 Double-check expiration before API call
+    if (isTokenExpired(token)) {
+      showErrorToast(
+        "This reset link has expired. Please request a new password reset link."
+      );
+      setError("root", {
+        type: "manual",
+        message:
+          "This reset link has expired. Please request a new password reset link.",
+      });
       return;
     }
 
@@ -97,61 +143,86 @@ const ResetPassword = () => {
           Reset Your Password
         </h2>
 
+        {/* Show error message if token is expired */}
+        {isTokenExpiredState && (
+          <div className="bg-red-900/20 border border-red-500 rounded-md p-3 mb-4">
+            <p className="text-red-400 text-sm text-center">
+              This reset link has expired. Please request a new password reset
+              link.
+            </p>
+            <button
+              onClick={() => navigate("/forgot-password")}
+              className="mt-2 w-full text-sm text-blue-400 hover:text-blue-300 underline"
+            >
+              Request New Reset Link
+            </button>
+          </div>
+        )}
+
         {/* Reset Form */}
-        <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-          {/* Password */}
-          <div>
-            <input
-              type="password"
-              {...register("password")}
-              placeholder="New Password (min 6 chars)"
-              className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm 
+        {!isTokenExpiredState && (
+          <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
+            {/* Password */}
+            <div>
+              <input
+                type="password"
+                {...register("password")}
+                placeholder="New Password (min 6 chars)"
+                className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm 
                 focus:outline-none focus:ring-1 ${
                   errors.password
                     ? "border-red-500 focus:ring-red-400"
                     : "border-gray-600 focus:ring-blue-400"
                 }`}
-            />
-            {errors.password && (
-              <p className="text-red-400 text-xs mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
+              />
+              {errors.password && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
-          {/* Confirm Password */}
-          <div>
-            <input
-              type="password"
-              {...register("confirmPassword")}
-              placeholder="Confirm Password"
-              className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm 
+            {/* Confirm Password */}
+            <div>
+              <input
+                type="password"
+                {...register("confirmPassword")}
+                placeholder="Confirm Password"
+                className={`w-full px-2 py-1.5 border bg-black text-white text-sm rounded-sm 
                 focus:outline-none focus:ring-1 ${
                   errors.confirmPassword
                     ? "border-red-500 focus:ring-red-400"
                     : "border-gray-600 focus:ring-blue-400"
                 }`}
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-400 text-xs mt-1">
-                {errors.confirmPassword.message}
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            {/* Root error message */}
+            {errors.root && (
+              <p className="text-red-400 text-xs text-center">
+                {errors.root.message}
               </p>
             )}
-          </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-blue-500 text-white py-1.5 text-sm rounded-md hover:bg-blue-600 transition flex justify-center items-center h-[36px] disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <img src={spinner} alt="loading" className="h-6 w-6" />
-            ) : (
-              "Reset Password"
-            )}
-          </button>
-        </form>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-blue-500 text-white py-1.5 text-sm rounded-md hover:bg-blue-600 transition flex justify-center items-center h-[36px] disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <img src={spinner} alt="loading" className="h-6 w-6" />
+              ) : (
+                "Reset Password"
+              )}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
